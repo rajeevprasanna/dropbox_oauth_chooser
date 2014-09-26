@@ -16,6 +16,7 @@
 - (IBAction)connectOAuth:(id)sender;
 
 - (IBAction)checkForUpdates:(id)sender;
+- (IBAction)refreshView:(id)sender;
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 

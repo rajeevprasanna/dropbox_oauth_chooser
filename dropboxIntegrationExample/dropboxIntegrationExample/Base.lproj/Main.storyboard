@@ -58,7 +58,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" tag="100" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="app-icon.png" translatesAutoresizingMaskIntoConstraints="NO" id="cMA-cJ-5fn">
+                                                <imageView userInteractionEnabled="NO" tag="100" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="dropbox-icon" translatesAutoresizingMaskIntoConstraints="NO" id="cMA-cJ-5fn">
                                                     <rect key="frame" x="272" y="0.0" width="48" height="43"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 </imageView>
@@ -81,7 +81,13 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" id="s8J-8f-zoc"/>
+                    <navigationItem key="navigationItem" id="s8J-8f-zoc">
+                        <barButtonItem key="rightBarButtonItem" systemItem="refresh" id="ONO-Ec-t2J">
+                            <connections>
+                                <action selector="refreshView:" destination="vXZ-lx-hvc" id="3Xm-yU-cys"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="ouathButton" destination="lDY-pG-0dn" id="Oot-2S-NWf"/>
                         <outlet property="tableView" destination="X8u-FK-Zts" id="xGR-ra-br9"/>
@@ -111,7 +117,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="app-icon.png" width="87" height="87"/>
+        <image name="dropbox-icon" width="256" height="256"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>

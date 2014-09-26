@@ -9,12 +9,18 @@
 #import "DropBoxOAuthServiceIntegration.h"
 
 //#warning INSERT YOUR OWN API KEY and SECRET HERE
-static NSString *apiKey = @"briefri6tqykkal";
-static NSString *appSecret = @"ag5e4ofrx22leyn";
+static NSString *apiKey = @"8343b03llcys1pw";
+static NSString *appSecret = @"fjj7trsupyofoho";
 
 NSString *const oauthTokenKey = @"oauth_token";
 NSString *const oauthTokenKeySecret = @"oauth_token_secret";
 NSString *const dropboxUIDKey = @"uid";
+
+NSString *const deletedFilesToken = @"deleted_files";
+NSString *const modifiedFilesToken = @"modified_files";
+NSString *const  allFilesToken = @"all_files";
+
+NSString *const cursor_key = @"cursor";
 
 NSString *const dropboxTokenReceivedNotification = @"have_user_request_token";
 
@@ -69,6 +75,177 @@ NSString * const accessTokenSecret = @"accessTokenSecret";
     }];
 }
 
++(void)getLatestCursonToFindDeltaChanges
+{
+    NSURL *requestTokenURL = [NSURL URLWithString:@"https://api.dropbox.com/1/delta/latest_cursor"];
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:requestTokenURL];
+    [request setHTTPMethod:@"POST"];
+    
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    [config setHTTPAdditionalHeaders:@{@"Authorization": [self apiAuthorizationHeader]}];
+    [config setTimeoutIntervalForRequest:10];
+    NSURLSession * session = [NSURLSession sessionWithConfiguration:config];
+    
+    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data,
+                                                                                              NSURLResponse *nsurlresponse,
+                                                                                              NSError *error) {
+        if(!error){
+            NSHTTPURLResponse *httpResp = (NSHTTPURLResponse *)nsurlresponse;
+            if(httpResp.statusCode == 200){
+                NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                NSString *cursor = response[@"cursor"];
+                [[NSUserDefaults standardUserDefaults] setObject:cursor forKey:cursor_key];
+            }else{
+                NSLog(@"error http code while receiving delta changes. http error code => %u", httpResp.statusCode);
+            }
+        }else{
+            NSLog(@"Error while retrieving delta changes =>  %@", [error localizedDescription]);
+        }
+    }];
+    [dataTask resume];
+}
+
++(void)getDeltaChanges
+{
+    NSString *cursor = [[NSUserDefaults standardUserDefaults] objectForKey:cursor_key];
+    if(!cursor){
+        [self getLatestCursonToFindDeltaChanges];
+        cursor = [[NSUserDefaults standardUserDefaults] objectForKey:cursor_key];
+    }
+    
+    NSString *requestTokenURLStr = @"https://api.dropbox.com/1/delta";
+    requestTokenURLStr = [NSString stringWithFormat:@"%@?cursor=%@", requestTokenURLStr,cursor];
+    
+    NSURL *requestTokenURL = [NSURL URLWithString:requestTokenURLStr];
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:requestTokenURL];
+    [request setHTTPMethod:@"POST"];
+    
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    [config setHTTPAdditionalHeaders:@{@"Authorization": [self apiAuthorizationHeader]}];
+    [config setTimeoutIntervalForRequest:10];
+    NSURLSession * session = [NSURLSession sessionWithConfiguration:config];
+    
+    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data,
+                                                                                              NSURLResponse *nsurlresponse,
+                                                                                              NSError *error) {
+        if(!error){
+            NSHTTPURLResponse *httpResp = (NSHTTPURLResponse *)nsurlresponse;
+            if(httpResp.statusCode == 200){
+                NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                
+                //update the cursor in shared default session
+                NSString *cursor = response[@"cursor"];
+                [[NSUserDefaults standardUserDefaults] setObject:cursor forKey:cursor_key];
+                NSLog(@"response => %@", response);
+                
+                NSMutableSet *deletedFilesSet = [NSMutableSet new];
+                NSMutableSet *modifiedFilesSet = [NSMutableSet new];
+                
+                NSArray *entries = response[@"entries"];
+                for(NSArray *entry in entries){
+                    NSString *fileName = [NSString stringWithFormat:@"%@",entry[0]];
+                    NSLog(@"data is not array. => %@", [entry[0] class]);
+                    if([entry[1] isKindOfClass:[NSDictionary class]]){
+                        NSDictionary *fileProps = entry[1];
+                        NSNumber * isDirectory = (NSNumber *)[fileProps objectForKey: @"success"];
+                        if(![isDirectory boolValue] == YES){
+                            [modifiedFilesSet addObject:fileName];
+                        }
+                    }else{//deleted file
+                        NSLog(@"data is not array. => %@", [entry[1] class]);
+                        [deletedFilesSet addObject:fileName];
+                    }
+                }
+                
+                NSMutableArray *allFiles = [NSMutableArray new];
+                for(NSString *fileName in modifiedFilesSet){
+                    [allFiles addObject:fileName];
+                }
+                for(NSString *fileName in deletedFilesSet){
+                    [allFiles addObject:fileName];
+                }
+                
+                [[NSUserDefaults standardUserDefaults] setObject:[deletedFilesSet allObjects]  forKey:deletedFilesToken];
+                [[NSUserDefaults standardUserDefaults] setObject:[modifiedFilesSet allObjects]  forKey:modifiedFilesToken];
+                [[NSUserDefaults standardUserDefaults] setObject:allFiles  forKey:allFilesToken];
+                
+            }else{
+                NSLog(@"error http code while receiving delta changes. http error code => %u", httpResp.statusCode);
+            }
+        }else{
+             NSLog(@"Error while retrieving delta changes =>  %@", [error localizedDescription]);
+        }
+    }];
+    [dataTask resume];
+}
+
++(void)getFilesMetadata
+{     
+    NSMutableArray *tempFiles = [[NSUserDefaults standardUserDefaults] objectForKey:@"dropboxFiles"];
+    if(tempFiles == nil){
+        return;
+    }
+    
+    for(NSMutableArray *fileInfo in tempFiles){
+        NSString *filePath = fileInfo[1];
+        NSString *urlStr = [NSString stringWithFormat:@"%@%@", @"https://api.dropbox.com/1/metadata/auto/", filePath];
+        
+        NSURL *url = [NSURL URLWithString:[urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+        
+        NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+        [config setHTTPAdditionalHeaders:@{@"Authorization": [self apiAuthorizationHeader]}];
+        [config setTimeoutIntervalForRequest:10];
+        NSURLSession * session = [NSURLSession sessionWithConfiguration:config];
+        
+        NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data,
+                                                                                                  NSURLResponse *nsurlresponse,
+                                                                                                  NSError *error) {
+            if(!error){
+                NSHTTPURLResponse *httpResp = (NSHTTPURLResponse *)nsurlresponse;
+                if(httpResp.statusCode == 200){
+                    NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                    NSString *newRevision = response[@"revision"];
+                    
+                    if([fileInfo count] == 2){
+                        [fileInfo addObject:newRevision];//setting old revision as -1
+                        [fileInfo addObject:newRevision]; //next parameter if new revision
+                    }else{
+                        fileInfo[2] = fileInfo[3];
+                        fileInfo[3] = newRevision;
+                        
+                        if(fileInfo[2] != fileInfo[3])
+                            NSLog(@"%@ has new been updated.", fileInfo[0]);
+                    }
+                }
+            }else{
+                NSLog(@"Error while retrieving metadata of file %@", [error localizedDescription]);
+            }
+        }];
+        [dataTask resume];
+    }
+    
+    tempFiles = [[NSUserDefaults standardUserDefaults] objectForKey:@"dropboxFiles"];
+    NSLog(@"temp files data => %@", tempFiles);
+}
+
++(NSString*)apiAuthorizationHeader
+{
+    NSString *token = [[NSUserDefaults standardUserDefaults] valueForKey:accessToken];
+    NSString *tokenSecret = [[NSUserDefaults standardUserDefaults] valueForKey:accessTokenSecret];
+    return [self plainTextAuthorizationHeaderForAppKey:apiKey
+                                             appSecret:appSecret
+                                                 token:token
+                                           tokenSecret:tokenSecret];
+}
+
+
 +(void)exchangeRequestTokenForAccessToken
 {
     //OAUTH step3 - exchange request token for user access token
@@ -84,6 +261,9 @@ NSString * const accessTokenSecret = @"accessTokenSecret";
                 [[NSUserDefaults standardUserDefaults] synchronize];
                 
                 NSLog(@"accessToken => %@", accessTokenDict[oauthTokenKey]);
+                
+                //Now get the latest cursor to be set in state for further use.
+                [self getLatestCursonToFindDeltaChanges];
             }else{
                 // HANDLE BAD RESPONSE //
                 NSLog(@"unexpected response getting token %@",[NSHTTPURLResponse localizedStringForStatusCode:httpResp.statusCode]);

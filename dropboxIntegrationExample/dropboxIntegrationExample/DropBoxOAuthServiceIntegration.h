@@ -16,9 +16,15 @@ extern NSString * const accessToken;
 extern NSString * const accessTokenSecret;
 extern NSString * const dropboxUIDKey;
 extern NSString * const dropboxTokenReceivedNotification;
+
+extern NSString * const deletedFilesToken;
+extern NSString * const modifiedFilesToken;
+extern NSString * const allFilesToken;
+
 typedef void (^DropboxRequestTokenCompletionHandler)(NSData *data, NSURLResponse *response, NSError *error);
 
 @interface DropBoxOAuthServiceIntegration : NSObject
 +(void)getOAuthRequestToken;
 +(void)exchangeRequestTokenForAccessToken;
++(void)getDeltaChanges;
 @end
