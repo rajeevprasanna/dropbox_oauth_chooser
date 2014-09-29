@@ -21,9 +21,10 @@
 		025352E119D415DD0004EA96 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 025352C319D415DD0004EA96 /* UIKit.framework */; };
 		025352E919D415DD0004EA96 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 025352E719D415DD0004EA96 /* InfoPlist.strings */; };
 		025352EB19D415DD0004EA96 /* dropboxIntegrationExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 025352EA19D415DD0004EA96 /* dropboxIntegrationExampleTests.m */; };
-		0253533719D419740004EA96 /* DBChooser.bundle in Frameworks */ = {isa = PBXBuildFile; fileRef = 0253533519D419740004EA96 /* DBChooser.bundle */; };
-		0253533819D419740004EA96 /* DBChooser.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0253533619D419740004EA96 /* DBChooser.framework */; };
 		0253533B19D427CA0004EA96 /* DropBoxOAuthServiceIntegration.m in Sources */ = {isa = PBXBuildFile; fileRef = 0253533A19D427CA0004EA96 /* DropBoxOAuthServiceIntegration.m */; };
+		02F38B0619D9686B0036F31C /* DropboxSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02F38B0519D9686B0036F31C /* DropboxSDK.framework */; };
+		02F38B0919D969450036F31C /* DBChooser.bundle in Frameworks */ = {isa = PBXBuildFile; fileRef = 02F38B0719D969450036F31C /* DBChooser.bundle */; };
+		02F38B0A19D969450036F31C /* DBChooser.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02F38B0819D969450036F31C /* DBChooser.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +61,9 @@
 		0253533619D419740004EA96 /* DBChooser.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DBChooser.framework; path = "../../dropbox-ios-dropins-sdk-1.2.1/DBChooser.framework"; sourceTree = "<group>"; };
 		0253533919D427CA0004EA96 /* DropBoxOAuthServiceIntegration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DropBoxOAuthServiceIntegration.h; sourceTree = "<group>"; };
 		0253533A19D427CA0004EA96 /* DropBoxOAuthServiceIntegration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DropBoxOAuthServiceIntegration.m; sourceTree = "<group>"; };
+		02F38B0519D9686B0036F31C /* DropboxSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = DropboxSDK.framework; sourceTree = "<group>"; };
+		02F38B0719D969450036F31C /* DBChooser.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = DBChooser.bundle; sourceTree = "<group>"; };
+		02F38B0819D969450036F31C /* DBChooser.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = DBChooser.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,8 +71,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0253533719D419740004EA96 /* DBChooser.bundle in Frameworks */,
-				0253533819D419740004EA96 /* DBChooser.framework in Frameworks */,
+				02F38B0919D969450036F31C /* DBChooser.bundle in Frameworks */,
+				02F38B0A19D969450036F31C /* DBChooser.framework in Frameworks */,
+				02F38B0619D9686B0036F31C /* DropboxSDK.framework in Frameworks */,
 				025352C219D415DD0004EA96 /* CoreGraphics.framework in Frameworks */,
 				025352C419D415DD0004EA96 /* UIKit.framework in Frameworks */,
 				025352C019D415DD0004EA96 /* Foundation.framework in Frameworks */,
@@ -91,6 +96,7 @@
 		025352B319D415DD0004EA96 = {
 			isa = PBXGroup;
 			children = (
+				02F38B0519D9686B0036F31C /* DropboxSDK.framework */,
 				025352C519D415DD0004EA96 /* dropboxIntegrationExample */,
 				025352E419D415DD0004EA96 /* dropboxIntegrationExampleTests */,
 				025352BE19D415DD0004EA96 /* Frameworks */,
@@ -110,6 +116,8 @@
 		025352BE19D415DD0004EA96 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				02F38B0719D969450036F31C /* DBChooser.bundle */,
+				02F38B0819D969450036F31C /* DBChooser.framework */,
 				0253533519D419740004EA96 /* DBChooser.bundle */,
 				0253533619D419740004EA96 /* DBChooser.framework */,
 				025352BF19D415DD0004EA96 /* Foundation.framework */,
@@ -394,6 +402,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"/Users/rajeevprasanna/Desktop/dropbox-ios-dropins-sdk-1.2.1",
+					"$(PROJECT_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "dropboxIntegrationExample/dropboxIntegrationExample-Prefix.pch";
@@ -411,6 +420,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"/Users/rajeevprasanna/Desktop/dropbox-ios-dropins-sdk-1.2.1",
+					"$(PROJECT_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "dropboxIntegrationExample/dropboxIntegrationExample-Prefix.pch";
